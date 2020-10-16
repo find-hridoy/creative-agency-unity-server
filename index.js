@@ -44,9 +44,6 @@ client.connect(err => {
     app.get('/getService', (req, res) => {
         servicesCollection.find({})
             .toArray((err, document) => {
-                if (err) {
-                    return res.status(500).send({ message: "Internal Server Error" })
-                }
                 res.send(document);
             })
     })
@@ -56,11 +53,6 @@ client.connect(err => {
         ordersCollection.insertOne(newOrder)
             .then(result => {
                 res.send(result.insertedCount > 0)
-            }).catch(er => {
-                if (er) {
-                    res.status(500).send({ message: "Internal Server Error" });
-                }
-
             })
     })
     // Read or Get Order Data with Email
@@ -72,18 +64,17 @@ client.connect(err => {
     })
     // Get or Read Total Order Data by Admin
     app.post('/getTotalOrder', (req, res) => {
-        const date = req.body;
-        const email = req.body.email;
-        adminsCollection.find({ email: email })
+        const adminEmail = req.body.email;
+        adminsCollection.find({ email: adminEmail })
             .toArray((err, admins) => {
-                const filter = { date: date.date }
-                if (admins.length === 0) {
-                    filter.email = email;
+                if (admins.length === 1) {
+                    ordersCollection.find({})
+                        .toArray((err, documents) => {
+                            res.send(documents);
+                        })
+                } if (admins.length === 0) {
+                    res.send("You are not admin")
                 }
-                ordersCollection.find(filter)
-                    .toArray((err, documents) => {
-                        res.send(documents);
-                    })
             })
     })
     // Post or Insert Review Data
@@ -92,19 +83,12 @@ client.connect(err => {
         reviewsCollection.insertOne(newReview)
             .then(result => {
                 res.send(result.insertedCount > 0)
-            }).catch(er => {
-                if (er) {
-                    res.status(500).send({ message: "Internal Server Error" });
-                }
             })
     })
     // // Get or Read Review Data
     app.get('/getReview', (req, res) => {
         reviewsCollection.find({})
             .toArray((err, document) => {
-                if (err) {
-                    return res.status(500).send({ message: "Internal Server Error" })
-                }
                 res.send(document);
             })
     })
@@ -114,11 +98,6 @@ client.connect(err => {
         adminsCollection.insertOne(newAdmin)
             .then(result => {
                 res.send(result.insertedCount > 0)
-            }).catch(er => {
-                if (er) {
-                    res.status(500).send({ message: "Internal Server Error" });
-                }
-
             })
     })
     app.post('/isAdmin', (req, res) => {
